@@ -1,0 +1,51 @@
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:password@localhost:8761/eureka
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - uri: lb://product-service
+          predicates:
+           - Path=/api/product/**
+          id: product-service
+        - uri: lb://order-service
+          predicates:
+            - Path=/api/order
+          id: order-service
+        - uri: http://localhost:8761
+          predicates:
+            - Path=/eureka/web
+          id: discovery-server
+          filters:
+            - SetPath=/
+        - uri: http://localhost:8761
+          id: discovery-server-static
+          predicates:
+            - Path=/eureka/**
+  zipkin:
+    base-url: http://localhost:9411
+  sleuth:
+    sampler:
+      probability: 1.0
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8181/realms/microService
+
+  application:
+    name: api-gateway
+logging:
+  level:
+    org:
+      springframework:
+        cloud:
+          gateway: trace
+          route:
+            routeDefinitionLocator: info
+    root: info
